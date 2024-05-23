@@ -10,21 +10,67 @@ def get_db():
     conn.row_factory = sq.Row
     return conn
 
+def create_cart():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO carrello DEFAULT VALUES')
+    cart_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return cart_id
+
+def create_user(username, password, indirizzo, preferenza):
+    hashed_password = generate_password_hash(password)
+    cart_id = create_cart()
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO utente (username, password, indirizzo, preferenza, id_carrello) VALUES (?, ?, ?, ?, ?)',
+                (username, hashed_password, indirizzo, preferenza, cart_id))
+    conn.commit()
+    conn.close()
+
+def add_item_to_cart(user_id, item_id, quantity):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO articoloCarrello (id_articolo, id_carrello, quantita) VALUES (?, ?, ?)',
+                (item_id, user_id, quantity))
+    conn.commit()
+    conn.close()
+
 @app.route('/')
 def index():
     query = request.args.get('query', '').strip()
     conn = get_db()
     cur = conn.cursor()
-    
-    if query:
-        cur.execute("SELECT * FROM articolo WHERE nome LIKE ? OR sport LIKE ?", ('%' + query + '%', '%' + query + '%'))
+
+    # Verifica se l'utente è autenticato e ha specificato le preferenze
+    if 'user_id' in session:
+        user_id = session['user_id']
+        cur.execute('SELECT preferenza FROM utente WHERE id = ?', (user_id,))
+        user_preference = cur.fetchone()
+        if user_preference:
+            preferenza = user_preference['preferenza']
+            # Se l'utente ha specificato le preferenze, ottieni gli articoli correlati
+            cur.execute("SELECT * FROM articolo WHERE sport = ? AND (nome LIKE ? OR sport LIKE ?)", (preferenza, '%' + query + '%', '%' + query + '%'))
+            preferred_items = cur.fetchall()
+            # Ottieni gli altri articoli
+            cur.execute("SELECT * FROM articolo WHERE sport != ? AND (nome LIKE ? OR sport LIKE ?)", (preferenza, '%' + query + '%', '%' + query + '%'))
+            other_items = cur.fetchall()
+            rows = preferred_items + other_items
+        else:
+            # Se l'utente è autenticato ma non ha specificato le preferenze, ottieni tutti gli articoli
+            cur.execute("SELECT * FROM articolo WHERE nome LIKE ? OR sport LIKE ?", ('%' + query + '%', '%' + query + '%'))
+            rows = cur.fetchall()
     else:
-        cur.execute('SELECT * FROM articolo')
-    
-    rows = cur.fetchall()
+        # Se l'utente non è autenticato, ottieni tutti gli articoli
+        cur.execute("SELECT * FROM articolo WHERE nome LIKE ? OR sport LIKE ?", ('%' + query + '%', '%' + query + '%'))
+        rows = cur.fetchall()
+
     conn.close()
-    
+
     return render_template('index.html', items=rows, query=query)
+
 
 @app.route('/item/<int:id>')
 def item(id):
@@ -43,22 +89,23 @@ def cart():
     cur = conn.cursor()
     items = []
 
-    cart_items = {}
     total_price = 0  # Inizializza il prezzo totale a zero
     if 'username' in session:
-        if 'cart' in session:
-            for item_id in session['cart']:
-                cart_items[item_id] = cart_items.get(item_id, 0) + 1
-
-            for item_id, quantity in cart_items.items():
-                cur.execute('SELECT * FROM articolo WHERE id = ?', (item_id,))
-                item = dict(cur.fetchone())
-                item['quantita'] = quantity
-                items.append(item)
-                total_price += item['prezzo'] * quantity  # Aggiungi il prezzo dell'articolo moltiplicato per la quantità
+        user_id = session.get('user_id')
+        cur.execute('''
+            SELECT articolo.id, articolo.nome, articolo.sport, SUM(articoloCarrello.quantita) AS quantita, articolo.prezzo, articolo.immagine
+            FROM articoloCarrello
+            JOIN articolo ON articolo.id = articoloCarrello.id_articolo
+            WHERE articoloCarrello.id_carrello = ?
+            GROUP BY articolo.id, articolo.nome, articolo.sport, articolo.prezzo
+        ''', (user_id,))
+        items = [dict(row) for row in cur.fetchall()]
+        total_price = sum(item['prezzo'] * item['quantita'] for item in items)
 
     conn.close()
-    return render_template('cart.html', items=items, total_price=total_price)  # Passa total_price al template
+    return render_template('cart.html', items=items, total_price=total_price)
+
+
 
 
 @app.route('/add_to_cart/<int:item_id>', methods=['POST'])
@@ -70,20 +117,39 @@ def add_to_cart(item_id):
 
     # Altrimenti, procedi con l'aggiunta dell'articolo al carrello
     quantity = int(request.form.get('quantity', 1))
-    session['cart'] = session.get('cart', [])
-    for _ in range(quantity):
-        session['cart'].append(item_id)
+    user_id = session.get('user_id')
+    add_item_to_cart(user_id, item_id, quantity)
     return redirect(url_for('item', id=item_id))
 
 
+from flask import abort
+
 @app.route('/remove_from_cart/<int:item_id>', methods=['POST'])
 def remove_from_cart(item_id):
-    if 'cart' in session:
-        session['cart'] = [i for i in session['cart'] if i != item_id]
+
+    user_id = session['user_id']
+
+    # Elimina l'articolo corrispondente dalla tabella articoloCarrello nel database
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM articoloCarrello WHERE id_carrello = ? AND id_articolo = ?', (user_id, item_id))
+    conn.commit()
+    conn.close()
+
     return redirect(url_for('cart'))
+
 
 @app.route('/purchase', methods=['POST'])
 def purchase():
+
+    user_id = session['user_id']
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM articoloCarrello WHERE id_carrello = ?', (user_id,))
+    conn.commit()
+    conn.close()
+
     return render_template('purchase_confirmation.html')
 
 @app.route('/map')
@@ -166,14 +232,7 @@ def register():
         indirizzo = request.form['indirizzo']
         preferenza = request.form['preferenza']
 
-        hashed_password = generate_password_hash(password)
-
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute('INSERT INTO utente (username, password, indirizzo, preferenza) VALUES (?, ?, ?, ?)',
-                    (username, hashed_password, indirizzo, preferenza))
-        conn.commit()
-        conn.close()
+        create_user(username, password, indirizzo, preferenza)
 
         flash('Registrazione avvenuta con successo! Ora puoi effettuare il login.', 'success')
         return redirect(url_for('login'))
