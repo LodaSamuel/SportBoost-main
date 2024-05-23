@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mappa Negozi</title>
+    <title>SportBoost</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         #map-container {
@@ -25,7 +25,6 @@
         <div id="map"></div>
     </div>
 
-    <!-- Elemento nascosto per contenere i dati negozi in JSON -->
     <div id="negozi-data" data-negozi='{{ negozi | tojson | safe }}'></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -39,6 +38,7 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
+        //segnalini per i negozi
         negozi.forEach(function(negozio) {
             L.marker([negozio.latitudine, negozio.longitudine]).addTo(map)
               .bindPopup(`${negozio.nome}, ${negozio.luogo}`);

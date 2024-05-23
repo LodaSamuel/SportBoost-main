@@ -5,11 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = 'il_tuo_segreto'
 
+#recupero database
 def get_db():
     conn = sq.connect('db.db')
     conn.row_factory = sq.Row
     return conn
 
+#creazione carrello
 def create_cart():
     conn = get_db()
     cur = conn.cursor()
@@ -19,6 +21,7 @@ def create_cart():
     conn.close()
     return cart_id
 
+#creazione utente
 def create_user(username, password, indirizzo, preferenza):
     hashed_password = generate_password_hash(password)
     cart_id = create_cart()
@@ -30,6 +33,7 @@ def create_user(username, password, indirizzo, preferenza):
     conn.commit()
     conn.close()
 
+#aggiunta articolo al carrello
 def add_item_to_cart(user_id, item_id, quantity):
     conn = get_db()
     cur = conn.cursor()
@@ -38,32 +42,29 @@ def add_item_to_cart(user_id, item_id, quantity):
     conn.commit()
     conn.close()
 
+#homepage
 @app.route('/')
 def index():
     query = request.args.get('query', '').strip()
     conn = get_db()
     cur = conn.cursor()
 
-    # Verifica se l'utente è autenticato e ha specificato le preferenze
+    #preferenze utente
     if 'user_id' in session:
         user_id = session['user_id']
         cur.execute('SELECT preferenza FROM utente WHERE id = ?', (user_id,))
         user_preference = cur.fetchone()
         if user_preference:
             preferenza = user_preference['preferenza']
-            # Se l'utente ha specificato le preferenze, ottieni gli articoli correlati
             cur.execute("SELECT * FROM articolo WHERE sport = ? AND (nome LIKE ? OR sport LIKE ?)", (preferenza, '%' + query + '%', '%' + query + '%'))
             preferred_items = cur.fetchall()
-            # Ottieni gli altri articoli
             cur.execute("SELECT * FROM articolo WHERE sport != ? AND (nome LIKE ? OR sport LIKE ?)", (preferenza, '%' + query + '%', '%' + query + '%'))
             other_items = cur.fetchall()
             rows = preferred_items + other_items
         else:
-            # Se l'utente è autenticato ma non ha specificato le preferenze, ottieni tutti gli articoli
             cur.execute("SELECT * FROM articolo WHERE nome LIKE ? OR sport LIKE ?", ('%' + query + '%', '%' + query + '%'))
             rows = cur.fetchall()
     else:
-        # Se l'utente non è autenticato, ottieni tutti gli articoli
         cur.execute("SELECT * FROM articolo WHERE nome LIKE ? OR sport LIKE ?", ('%' + query + '%', '%' + query + '%'))
         rows = cur.fetchall()
 
@@ -71,7 +72,7 @@ def index():
 
     return render_template('index.html', items=rows, query=query)
 
-
+#pagina articolo
 @app.route('/item/<int:id>')
 def item(id):
     conn = get_db()
@@ -83,13 +84,15 @@ def item(id):
         return "Articolo non trovato", 404
     return render_template('item.html', item=row)
 
+#pagina carrello
 @app.route('/cart')
 def cart():
     conn = get_db()
     cur = conn.cursor()
     items = []
+    total_price = 0
 
-    total_price = 0  # Inizializza il prezzo totale a zero
+    #carrello differenziato per ogni utente
     if 'username' in session:
         user_id = session.get('user_id')
         cur.execute('''
@@ -105,31 +108,25 @@ def cart():
     conn.close()
     return render_template('cart.html', items=items, total_price=total_price)
 
-
-
-
+#aggiunta articolo al carrello
 @app.route('/add_to_cart/<int:item_id>', methods=['POST'])
 def add_to_cart(item_id):
-    # Controlla se l'utente è autenticato
+    #controllo autenticazione
     if 'username' not in session:
         flash('Effettua l\'accesso per aggiungere articoli al carrello', 'error')
         return redirect(url_for('login'))
 
-    # Altrimenti, procedi con l'aggiunta dell'articolo al carrello
     quantity = int(request.form.get('quantity', 1))
     user_id = session.get('user_id')
     add_item_to_cart(user_id, item_id, quantity)
     return redirect(url_for('item', id=item_id))
 
-
-from flask import abort
-
+#rimozione articolo dal carrello
 @app.route('/remove_from_cart/<int:item_id>', methods=['POST'])
 def remove_from_cart(item_id):
 
     user_id = session['user_id']
 
-    # Elimina l'articolo corrispondente dalla tabella articoloCarrello nel database
     conn = get_db()
     cur = conn.cursor()
     cur.execute('DELETE FROM articoloCarrello WHERE id_carrello = ? AND id_articolo = ?', (user_id, item_id))
@@ -138,7 +135,7 @@ def remove_from_cart(item_id):
 
     return redirect(url_for('cart'))
 
-
+#acquisto articoli
 @app.route('/purchase', methods=['POST'])
 def purchase():
 
@@ -152,6 +149,7 @@ def purchase():
 
     return render_template('purchase_confirmation.html')
 
+#mappa negozi
 @app.route('/map')
 def map():
     conn = get_db()
@@ -162,6 +160,7 @@ def map():
     conn.close()
     return render_template('map.html', negozi=negozi)
 
+#pagina catalogo negozio
 @app.route('/store_products')
 def store_products():
     negozio_id = request.args.get('negozio_id', type=int)
@@ -169,6 +168,7 @@ def store_products():
     conn = get_db()
     cur = conn.cursor()
 
+    #ricerca
     if query:
         cur.execute('''
             SELECT articolo.* FROM articolo
@@ -187,7 +187,7 @@ def store_products():
 
     return render_template('index.html', items=rows, query=query)
 
-
+#mappa negozi con un certo articolo
 @app.route('/map_item/<int:item_id>')
 def map_item(item_id):
     conn = get_db()
@@ -202,6 +202,7 @@ def map_item(item_id):
     conn.close()
     return render_template('map_item.html', negozi=negozi)
 
+#login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -224,6 +225,7 @@ def login():
 
     return render_template('login.html')
 
+#registrazione
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -239,6 +241,7 @@ def register():
 
     return render_template('register.html')
 
+#logout
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)

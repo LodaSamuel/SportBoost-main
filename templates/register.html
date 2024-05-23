@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrazione</title>
+    <title>SportBoost</title>
     <link rel="stylesheet" type="text/css" href="../static/css/accountStyle.css">
 </head>
 <body>
 
     {% include 'navbar.html' %}
 
+    <!-- form -->
     <div class="form-conteiner">
         <h1>Registrazione</h1>
         <form method="POST" action="{{ url_for('register') }}">
@@ -27,6 +28,8 @@
             <br>
             <button type="submit">Registrati</button>
         </form>
+
+        <!-- collegamento con login -->
         <p>Hai già un account? <a href="{{ url_for('login') }}">Accedi qui</a></p>
     </div>
     

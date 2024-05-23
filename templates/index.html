@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Template con Navbar e Card</title>
+  <title>SportBoost</title>
   <link rel="stylesheet" type="text/css" href="../static/css/indexStyle.css">
 </head>
 <body>
 
  {% include 'navbar.html' %}
 
-  <!-- Barra di ricerca -->
+  <!-- barra di ricerca -->
   <div class="search-bar">
     <form action="{{ url_for('index') }}" method="GET">
       <input type="text" name="query" class="search-input" placeholder="Cerca..." value="{{ query }}">
@@ -19,7 +19,7 @@
   </div>
 
 
-  <!-- Card per le informazioni -->
+  <!-- card prodotti -->
   <div class="card-container">
     {% for item in items %}
       <a href="{{ url_for('item', id=item['id']) }}">

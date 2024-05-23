@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dettagli Prodotto</title>
+  <title>SportBoost</title>
   <link rel="stylesheet" type="text/css" href="../static/css/itemStyle.css">
 </head>
 <body>
@@ -14,11 +14,14 @@
   <h2>{{ item["sport"] }}</h2>
   <div class="item-details">
     <img src="../{{ item['immagine'] }}" alt="Immagine prodotto" class="immagine-prodotto">
+
+
     <div class="item-info">
       <div class="item-price">
-        <p>{{ '%.2f'|format(item["prezzo"]) }}</p>
+        <p>€{{ '%.2f'|format(item["prezzo"]) }}</p>
       </div>
 
+      <!-- quantità -->
       <div class="quantity">
         <button class="quantity-btn" id="decrease" onclick="decreaseQuantity()">-</button>
         <span id="quantity-value">1</span>
@@ -30,7 +33,10 @@
       </script>
       
       <div class="buttons">
+        <!-- tasto negozi -->
         <button class="action-btn" id="shop-btn" onclick="location.href=mapItemUrl;">Negozio</button>
+        
+        <!-- tasto carrello -->
         <form action="{{ url_for('add_to_cart', item_id=item['id']) }}" method="post">
           <input type="hidden" name="quantity" value="1"> 
           <button class="action-btn" type="submit">Carrello</button>

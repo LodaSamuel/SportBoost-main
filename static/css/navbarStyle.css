@@ -1,4 +1,5 @@
 .navbar {
+    font-family: 'Roboto', sans-serif;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -16,15 +17,6 @@
     text-decoration: none;
     margin: 0 10px;
     font-weight: bold;
-  }
-
-  .navbar se {
-    color: #b0bdf7;
-    text-align: center;
-    padding: 14px 20px;
-    text-decoration: none;
-    margin: 0 10px;
-    font-weight: bolder;
   }
   
   .navbar a:hover {

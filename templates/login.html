@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>SportBoost</title>
     <link rel="stylesheet" type="text/css" href="../static/css/accountStyle.css">
 </head>
 <body>
 
     {% include 'navbar.html' %}
-
+    <!-- messaggio errore -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
@@ -20,6 +20,7 @@
         {% endif %}
     {% endwith %}
     
+    <!-- form -->
     <div class="form-conteiner">
         <h1>Login</h1>
         <form method="POST" action="{{ url_for('login') }}">
@@ -31,6 +32,8 @@
             <br>
             <button type="submit">Login</button>
         </form>
+        
+        <!-- collegamento con register -->
         <p>Non hai un account? <a href="{{ url_for('register') }}">Registrati qui</a></p>
     </div>
 
