@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mappa Negozi</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: #fff;
+      padding: 10px 0;
+      z-index: 1000;
+    }
+
+    #map-container {
+      margin-top: 50px;
+      height: calc(100vh - 50px);
+      width: 100%;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="navbar">
+    {% include 'navbar.html' %}
+  </div>
+
+  <div id="map-container">
+    <div id="map"></div>
+  </div>
+
+  <!-- Inserire i dati dei negozi in un div nascosto -->
+  <div id="negozi-data" style="display: none;">
+    {{ negozi | tojson | safe }}
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map').setView([45.556034, 10.216818], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Recuperare i dati dei negozi dal div nascosto
+    var negoziData = document.getElementById('negozi-data').textContent;
+    var negozi = JSON.parse(negoziData);
+
+    negozi.forEach(function(negozio) {
+      var url = "{{ url_for('store_products') }}?negozio_id=" + negozio.id;
+      L.marker([negozio.latitudine, negozio.longitudine]).addTo(map)
+        .bindPopup('<a href="' + url + '">' + negozio.nome + ', ' + negozio.luogo + '</a>');
+    });
+  </script>
+</body>
+</html>

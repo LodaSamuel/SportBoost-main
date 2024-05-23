@@ -1,0 +1,24 @@
+<link rel="stylesheet" type="text/css" href="../static/css/navbarStyle.css">
+
+ <div class="navbar-container">
+  <div class="navbar">
+    <div class="centro">
+      <a href="/">Home</a>
+      <a href="/map">Negozi</a>
+      <a href="/cart">Carrello</a>
+    </div>
+    <div class="profile">
+      <nav>
+        <ul>
+            {% if 'username' in session %}
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Registrati</a>
+            {% endif %}
+        </ul>
+    </nav>
+    
+    </div>
+  </div>
+</div>

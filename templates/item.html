@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dettagli Prodotto</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/itemStyle.css">
+</head>
+<body>
+
+  {% include 'navbar.html' %}
+
+  <h1>{{ item["nome"] }}</h1>
+  <h2>{{ item["sport"] }}</h2>
+  <div class="item-details">
+    <img src="../{{ item['immagine'] }}" alt="Immagine prodotto" class="immagine-prodotto">
+    <div class="item-info">
+      <div class="item-price">
+        <p>{{ '%.2f'|format(item["prezzo"]) }}</p>
+      </div>
+
+      <div class="quantity">
+        <button class="quantity-btn" id="decrease" onclick="decreaseQuantity()">-</button>
+        <span id="quantity-value">1</span>
+        <button class="quantity-btn" id="increase" onclick="increaseQuantity()">+</button>
+      </div>
+
+      <script>
+        var mapItemUrl = "{{ url_for('map_item', item_id=item['id']) }}";
+      </script>
+      
+      <div class="buttons">
+        <button class="action-btn" id="shop-btn" onclick="location.href=mapItemUrl;">Negozio</button>
+        <form action="{{ url_for('add_to_cart', item_id=item['id']) }}" method="post">
+          <input type="hidden" name="quantity" value="1"> 
+          <button class="action-btn" type="submit">Carrello</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+<script>
+  function decreaseQuantity() {
+      var quantityElement = document.getElementById('quantity-value');
+      var quantity = parseInt(quantityElement.textContent);
+      if (quantity > 1) {
+          quantityElement.textContent = quantity - 1;
+          document.querySelector('input[name="quantity"]').value = quantity - 1;
+      }
+  }
+
+  function increaseQuantity() {
+      var quantityElement = document.getElementById('quantity-value');
+      var quantity = parseInt(quantityElement.textContent);
+      quantityElement.textContent = quantity + 1;
+      document.querySelector('input[name="quantity"]').value = quantity + 1;
+  }
+</script>
+
+</html>

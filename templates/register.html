@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrazione</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <h1>Registrazione</h1>
+    <form method="POST" action="{{ url_for('register') }}">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <label for="indirizzo">Indirizzo:</label>
+        <input type="text" id="indirizzo" name="indirizzo" required>
+        <br>
+        <label for="preferenza">Preferenza:</label>
+        <input type="text" id="preferenza" name="preferenza" required>
+        <br>
+        <button type="submit">Registrati</button>
+    </form>
+    <p>Hai già un account? <a href="{{ url_for('login') }}">Accedi qui</a></p>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Negozi</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map-container {
+            margin-top: 50px;
+            height: 100vh;
+            width: 100%;
+            }
+
+        #map {
+            height: 100%;
+            }
+    </style>
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <!-- Elemento nascosto per contenere i dati negozi in JSON -->
+    <div id="negozi-data" data-negozi='{{ negozi | tojson | safe }}'></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var negoziData = document.getElementById('negozi-data').getAttribute('data-negozi');
+        var negozi = JSON.parse(negoziData);
+
+        var map = L.map('map').setView([45.556034, 10.216818], 10);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        negozi.forEach(function(negozio) {
+            L.marker([negozio.latitudine, negozio.longitudine]).addTo(map)
+              .bindPopup(`${negozio.nome}, ${negozio.luogo}`);
+        });
+    </script>
+</body>
+</html>

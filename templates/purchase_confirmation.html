@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conferma Acquisto</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/purchaseConfirmationStyle.css">
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <h1>Grazie per il tuo acquisto!</h1>
+  <p>Il tuo ordine è stato ricevuto e verrà elaborato a breve.</p>
+  <a href="{{ url_for('index') }}">Torna alla homepage</a>
+</body>
+</html>
