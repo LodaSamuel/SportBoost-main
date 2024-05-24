@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SportBoost</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/accountStyle.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportBoost</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/accountStyle.css">
 </head>
 <body>
-
+    
     {% include 'navbar.html' %}
 
-    <!-- form -->
-    <div class="form-conteiner">
+    <div class="form-container">
         <h1>Registrazione</h1>
+
+        <!-- messaggio di errore -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- form -->
         <form method="POST" action="{{ url_for('register') }}">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>

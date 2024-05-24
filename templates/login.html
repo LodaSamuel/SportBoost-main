@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SportBoost</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/accountStyle.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportBoost</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/accountStyle.css">
 </head>
 <body>
 
     {% include 'navbar.html' %}
+    
+    <div class="form-container">
+        <h1>Login</h1>
+        
     <!-- messaggio errore -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -19,10 +23,8 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    
-    <!-- form -->
-    <div class="form-conteiner">
-        <h1>Login</h1>
+
+        <!-- form -->
         <form method="POST" action="{{ url_for('login') }}">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>

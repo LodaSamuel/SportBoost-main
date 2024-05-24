@@ -232,10 +232,26 @@ def register():
         password = request.form['password']
         indirizzo = request.form['indirizzo']
         preferenza = request.form['preferenza']
-        print(preferenza)
+
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM utente WHERE username = ?', (username,))
+        existing_user = cur.fetchone()
+
+        if existing_user:
+            flash('Username già esistente', 'danger')
+            return redirect(url_for('register'))
+
         create_user(username, password, indirizzo, preferenza)
 
-        return redirect(url_for('login'))
+        cur.execute('SELECT * FROM utente WHERE username = ?', (username,))
+
+        user = cur.fetchone()
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        conn.close()
+
+        return redirect(url_for('index'))
         
     else:
         conn = get_db()
@@ -251,7 +267,6 @@ def register():
 def logout():
     session.pop('user_id', None)
     session.pop('username', None)
-    flash('Logout effettuato con successo!', 'success')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
