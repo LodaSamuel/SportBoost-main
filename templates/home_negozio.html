@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportBoost</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/indexStyle.css">
+</head>
+<body>
+
+ {% include 'navbar.html' %}
+
+  <!-- barra di ricerca -->
+  <div class="search-bar">
+    <!-- {{ url_for('store_products') }}?negozio_id=" + negozio.id-->
+    <form action="{{ url_for('store_products') }}" method="GET">
+        <input type="hidden" name="negozio_id" value="{{ negozio_id }}">
+        <input type="text" name="query" class="search-input" placeholder="Cerca..." value="{{ query }}">
+        <button type="submit" class="search-button">Cerca</button>
+    </form>
+    
+  </div>
+
+  <!-- card prodotti -->
+  <div class="card-container">
+    {% for item in items %}
+      <a href="{{ url_for('item', id=item['id']) }}">
+        <div class="card"> 
+          <h2>{{ item["nome"] }}</h2>
+          <img src="{{ item['immagine'] }}" alt="Immagine prodotto" class="immagine-prodotto">
+          <p>{{ item["sport"] }}</p>
+          <div class="number">€{{ '%.2f'|format(item["prezzo"]) }}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+</body>
+</html>

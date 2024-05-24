@@ -167,7 +167,7 @@ def store_products():
     query = request.args.get('query', '').strip()
     conn = get_db()
     cur = conn.cursor()
-
+    print(negozio_id)
     #ricerca
     if query:
         cur.execute('''
@@ -185,7 +185,7 @@ def store_products():
     rows = cur.fetchall()
     conn.close()
 
-    return render_template('index.html', items=rows, query=query)
+    return render_template('home_negozio.html', items=rows, query=query, negozio_id = negozio_id)
 
 #mappa negozi con un certo articolo
 @app.route('/map_item/<int:item_id>')
@@ -218,7 +218,6 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             session['username'] = user['username']
-            flash('Login effettuato con successo!', 'success')
             return redirect(url_for('index'))
         else:
             flash('Username o password non validi', 'danger')
@@ -233,13 +232,19 @@ def register():
         password = request.form['password']
         indirizzo = request.form['indirizzo']
         preferenza = request.form['preferenza']
-
+        print(preferenza)
         create_user(username, password, indirizzo, preferenza)
 
-        flash('Registrazione avvenuta con successo! Ora puoi effettuare il login.', 'success')
         return redirect(url_for('login'))
+        
+    else:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT DISTINCT articolo.sport FROM articolo')
+        sport = cur.fetchall()
+        conn.close()
 
-    return render_template('register.html')
+        return render_template('register.html', sport=sport)
 
 #logout
 @app.route('/logout')

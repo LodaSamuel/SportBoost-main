@@ -24,7 +24,11 @@
             <input type="text" id="indirizzo" name="indirizzo" required>
             <br>
             <label for="preferenza">Preferenza:</label>
-            <input type="text" id="preferenza" name="preferenza" required>
+            <select id="preferenza" name="preferenza" required>
+                {% for sp in sport %}
+                    <option value="{{ sp[0] }}">{{ sp[0] }}</option>
+                {% endfor %}
+            </select>
             <br>
             <button type="submit">Registrati</button>
         </form>
